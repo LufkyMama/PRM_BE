@@ -19,7 +19,7 @@ namespace PRM_BE.Model
             modelBuilder.Entity<User>(entity =>
             {
                 entity.HasKey(u => u.Id);
-                entity.Property(u => u.Name).IsRequired().HasMaxLength(100);
+                entity.Property(u => u.UserName).IsRequired().HasMaxLength(100);
                 entity.Property(u => u.Email).IsRequired().HasMaxLength(150);
                 entity.Property(u => u.Password).IsRequired().HasMaxLength(200);
                 entity.Property(u => u.FirstName).HasMaxLength(100);
