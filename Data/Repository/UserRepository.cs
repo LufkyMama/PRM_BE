@@ -5,7 +5,7 @@ namespace PRM_BE.Data.Repository
 {
     public class UserRepository
     {
-       private readonly Model.AppDbContext _context;
+       private readonly AppDbContext _context;
             public UserRepository(AppDbContext context)
             {
                 _context = context;

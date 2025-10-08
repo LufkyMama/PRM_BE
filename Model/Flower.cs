@@ -1,4 +1,6 @@
-﻿namespace PRM_BE.Model
+﻿using PRM_BE.Model.Enums;
+
+namespace PRM_BE.Model
 {
     public class Flower
     {
@@ -8,6 +10,6 @@
         public String ImageUrl { get; set; }
         public decimal Price { get; set; }
         public int Stock { get; set; }
-        public String Category { get; set; }
+        public FlowerCategory Category { get; set; }
     }
 }

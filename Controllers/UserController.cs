@@ -26,7 +26,8 @@ namespace PRM_BE.Controllers
                 request.Password,
                 request.PhoneNumber,
                 request.LastName,
-                request.FirstName);
+                request.FirstName,
+                request.Address);
 
             if (!result.Success)
             {

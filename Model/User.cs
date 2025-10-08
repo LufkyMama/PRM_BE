@@ -1,4 +1,7 @@
-﻿namespace PRM_BE.Model
+﻿using Microsoft.AspNetCore.Identity;
+using PRM_BE.Model.Enums;
+
+namespace PRM_BE.Model
 {
     public class User
     {
@@ -9,14 +12,13 @@
         public String FirstName { get; set; }   
         public String LastName { get; set; }
         public String PhoneNumber { get; set; }    
+        public String Address { get; set; }
         public DateTime DateOfBirth { get; set; }
-        public user_role Role { get; set; }    
+        public UserRole Role { get; set; } = UserRole.Customer;
 
-    }
-    public enum user_role
-    {
-        Admin=1,
-        User=2,
-        Staff=3
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public bool IsActive { get; set; } = true;
+
+        public ICollection<Order> Orders { get; set; } = new List<Order>();
     }
 }

@@ -2,8 +2,8 @@
 {
     public class FlowerRepo
     {
-        private readonly Model.AppDbContext _context;
-        public FlowerRepo(Model.AppDbContext context)
+        private readonly AppDbContext _context;
+        public FlowerRepo(AppDbContext context)
         {
             _context = context;
         }

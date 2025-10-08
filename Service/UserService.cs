@@ -1,4 +1,5 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
+using System.Net;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
@@ -6,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using PRM_BE.Data.Repository;
 using PRM_BE.Model;
+using PRM_BE.Model.Enums;
 using PRM_BE.Service.Models;
 
 namespace PRM_BE.Service
@@ -21,7 +23,7 @@ namespace PRM_BE.Service
             _configuration = configuration;
         }
 
-        public async Task<ServiceResponse<Auth>> RegisterAsync(string username, string email, string password, string? phoneNumber, string firstname, string lastname)
+        public async Task<ServiceResponse<Auth>> RegisterAsync(string username, string email, string password, string? phoneNumber, string firstname, string lastname, string address)
         {
             // Validate inputs
             if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
@@ -50,7 +52,8 @@ namespace PRM_BE.Service
                 PhoneNumber = phoneNumber,
                 FirstName = firstname,
                 LastName = lastname,
-                Role = user_role.User,
+                Role = Model.Enums.UserRole.Customer,
+                Address = address,
             };
 
             // Save user to database
@@ -112,27 +115,38 @@ namespace PRM_BE.Service
 
         private string GenerateJwtToken(User user)
         {
-            var jwtKey = _configuration["Jwt:Key"] ?? "DefaultKeyForDevelopmentPurposesOnly12345678901234";
-            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
+            var issuer = _configuration["Jwt:Issuer"] ?? "exeapi";
+            var audience = _configuration["Jwt:Audience"] ?? "exeusers";
+            var key = _configuration["Jwt:Key"]
+                           ?? throw new Exception("JWT Key missing in configuration");
+
+            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
-            var claims = new[]
-            {
-                new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
-                new Claim(JwtRegisteredClaimNames.Email, user.Email),
-                new Claim(ClaimTypes.Role, Enum.GetName(typeof(user_role), user.Role)),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim(ClaimTypes.Name, user.UserName)
-            };
+            var now = DateTime.UtcNow;
+
+            var claims = new List<Claim>
+    {
+        new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+        new Claim(JwtRegisteredClaimNames.Iat, new DateTimeOffset(now).ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64),
+        new Claim(JwtRegisteredClaimNames.Email, user.Email ?? string.Empty),
+        new Claim(ClaimTypes.Name, user.UserName ?? string.Empty),
+        // Role: dùng ClaimTypes.Role để khớp RoleClaimType = ClaimTypes.Role trong TokenValidationParameters
+        new Claim(ClaimTypes.Role, Enum.GetName(typeof(UserRole), user.Role) ?? "User")
+    };
 
             var token = new JwtSecurityToken(
-                issuer: _configuration["Jwt:Issuer"] ?? "exeapi",
+                issuer: issuer,
+                audience: audience,              // <-- bắt buộc khi ValidateAudience = true
                 claims: claims,
-                expires: DateTime.Now.AddDays(7),
+                notBefore: now,
+                expires: now.AddDays(7),
                 signingCredentials: credentials
             );
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
+
     }
 }
