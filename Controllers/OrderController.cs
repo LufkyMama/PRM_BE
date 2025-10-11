@@ -60,7 +60,7 @@ namespace PRM_BE.Controllers
 
         // DELETE: api/order/{id}
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,Customer,Staff")]
         public async Task<IActionResult> Delete(int id)
         {
             await _orderService.DeleteAsync(id);
