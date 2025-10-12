@@ -28,7 +28,7 @@ namespace PRM_BE.Controllers
 
         // POST: api/payment
         [HttpPost]
-        [Authorize(Roles = "Admin,Staff")]
+        [Authorize]
         public async Task<ActionResult<PaymentDto>> Create([FromBody] PaymentCreateDto dto)
         {
             var created = await _paymentService.CreateAsync(dto);
@@ -37,7 +37,7 @@ namespace PRM_BE.Controllers
 
         // PUT: api/payment/{id}/status
         [HttpPut("{paymentId}/status")]
-        [Authorize(Roles = "Admin,Staff")]
+        [Authorize]
         public async Task<IActionResult> UpdateStatus(int paymentId, [FromBody] PaymentStatusUpdateDto dto)
         {
             await _paymentService.UpdateStatusAsync(paymentId, dto);
