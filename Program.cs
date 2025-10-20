@@ -8,9 +8,16 @@ using PRM_BE.Data;
 using PRM_BE.Service;
 using PRM_BE.Model.Momo;
 using PRM_BE.Service.Momo;
+using FirebaseAdmin;
+using Google.Apis.Auth.OAuth2;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Firebase Admin SDK initialization
+FirebaseApp.Create(new AppOptions()
+{
+    Credential = GoogleCredential.FromFile("firebase-key.json"),
+});
 // Connect MomoAPI
 builder.Services.Configure<MomoOptionModel>(builder.Configuration.GetSection("MomoAPI"));
 builder.Services.AddScoped<IMomoService, MomoService>();
@@ -43,6 +50,17 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddControllersWithViews();
+
+// Add CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+});
 
 // ===== JWT AUTH =====
 var jwtSection = builder.Configuration.GetSection("Jwt");
@@ -117,6 +135,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+// Enable CORS
+app.UseCors("AllowAll");
 
 // THỨ TỰ ĐÚNG: Authentication trước Authorization
 app.UseAuthentication();
