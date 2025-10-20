@@ -2,6 +2,8 @@ using FirebaseAdmin;
 using Google.Cloud.Storage.V1;
 using Google.Apis.Auth.OAuth2;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
+using PRM_BE.Model;
 using System;
 using System.IO;
 using System.Threading.Tasks;
@@ -11,6 +13,36 @@ namespace PRM_BE.Service
     public class FirebaseStorageService
     {
         private readonly string _bucketName = "flower-shop-af959.firebasestorage.app";
+        private readonly IConfiguration _configuration;
+
+        public FirebaseStorageService(IConfiguration configuration)
+        {
+            _configuration = configuration;
+        }
+
+        private GoogleCredential GetFirebaseCredential()
+        {
+            var firebaseConfig = _configuration.GetSection("Firebase").Get<FirebaseConfig>();
+            if (firebaseConfig == null)
+                throw new Exception("Firebase configuration not found");
+
+            // Tạo JSON string từ configuration
+            var serviceAccountJson = $@"{{
+                ""type"": ""service_account"",
+                ""project_id"": ""{firebaseConfig.ProjectId}"",
+                ""private_key_id"": ""{firebaseConfig.PrivateKeyId}"",
+                ""private_key"": ""{firebaseConfig.PrivateKey}"",
+                ""client_email"": ""{firebaseConfig.ClientEmail}"",
+                ""client_id"": ""{firebaseConfig.ClientId}"",
+                ""auth_uri"": ""{firebaseConfig.AuthUri}"",
+                ""token_uri"": ""{firebaseConfig.TokenUri}"",
+                ""auth_provider_x509_cert_url"": ""{firebaseConfig.AuthProviderX509CertUrl}"",
+                ""client_x509_cert_url"": ""{firebaseConfig.ClientX509CertUrl}"",
+                ""universe_domain"": ""{firebaseConfig.UniverseDomain}""
+            }}";
+
+            return GoogleCredential.FromJson(serviceAccountJson);
+        }
 
         public async Task<(string url, string fileName)> UploadImageAsync(IFormFile file)
         {
@@ -21,8 +53,8 @@ namespace PRM_BE.Service
             await file.CopyToAsync(stream);
             stream.Position = 0;
 
-            // Sử dụng credentials từ firebase-key.json
-            var credential = GoogleCredential.FromFile("firebase-key.json");
+            // Sử dụng credentials từ configuration
+            var credential = GetFirebaseCredential();
             var storage = StorageClient.Create(credential);
             
             var fileName = $"{Guid.NewGuid()}_{file.FileName}";
@@ -37,7 +69,7 @@ namespace PRM_BE.Service
             if (string.IsNullOrEmpty(fileName))
                 throw new Exception("Tên file không hợp lệ.");
 
-            var credential = GoogleCredential.FromFile("firebase-key.json");
+            var credential = GetFirebaseCredential();
             var storage = StorageClient.Create(credential);
 
             using var stream = new MemoryStream();
@@ -54,7 +86,7 @@ namespace PRM_BE.Service
             if (newFile == null || newFile.Length == 0)
                 throw new Exception("File mới không hợp lệ.");
 
-            var credential = GoogleCredential.FromFile("firebase-key.json");
+            var credential = GetFirebaseCredential();
             var storage = StorageClient.Create(credential);
 
             // Xóa file cũ
@@ -83,7 +115,7 @@ namespace PRM_BE.Service
             if (string.IsNullOrEmpty(fileName))
                 throw new Exception("Tên file không hợp lệ.");
 
-            var credential = GoogleCredential.FromFile("firebase-key.json");
+            var credential = GetFirebaseCredential();
             var storage = StorageClient.Create(credential);
 
             try
@@ -100,7 +132,7 @@ namespace PRM_BE.Service
 
         public async Task<List<string>> ListImagesAsync()
         {
-            var credential = GoogleCredential.FromFile("firebase-key.json");
+            var credential = GetFirebaseCredential();
             var storage = StorageClient.Create(credential);
 
             var objects = new List<string>();

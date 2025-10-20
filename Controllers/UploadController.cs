@@ -11,9 +11,9 @@ namespace PRM_BE.Controllers
     {
         private readonly FirebaseStorageService _storageService;
 
-        public UploadController()
+        public UploadController(FirebaseStorageService storageService)
         {
-            _storageService = new FirebaseStorageService();
+            _storageService = storageService;
         }
 
         [HttpPost("image")]

@@ -8,16 +8,38 @@ using PRM_BE.Data;
 using PRM_BE.Service;
 using PRM_BE.Model.Momo;
 using PRM_BE.Service.Momo;
+using PRM_BE.Model;
 using FirebaseAdmin;
 using Google.Apis.Auth.OAuth2;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Firebase Admin SDK initialization
-FirebaseApp.Create(new AppOptions()
+var firebaseConfig = builder.Configuration.GetSection("Firebase").Get<FirebaseConfig>();
+if (firebaseConfig != null)
 {
-    Credential = GoogleCredential.FromFile("firebase-key.json"),
-});
+    // Tạo JSON string từ configuration
+    var serviceAccountJson = $@"{{
+        ""type"": ""service_account"",
+        ""project_id"": ""{firebaseConfig.ProjectId}"",
+        ""private_key_id"": ""{firebaseConfig.PrivateKeyId}"",
+        ""private_key"": ""{firebaseConfig.PrivateKey}"",
+        ""client_email"": ""{firebaseConfig.ClientEmail}"",
+        ""client_id"": ""{firebaseConfig.ClientId}"",
+        ""auth_uri"": ""{firebaseConfig.AuthUri}"",
+        ""token_uri"": ""{firebaseConfig.TokenUri}"",
+        ""auth_provider_x509_cert_url"": ""{firebaseConfig.AuthProviderX509CertUrl}"",
+        ""client_x509_cert_url"": ""{firebaseConfig.ClientX509CertUrl}"",
+        ""universe_domain"": ""{firebaseConfig.UniverseDomain}""
+    }}";
+
+    var credential = GoogleCredential.FromJson(serviceAccountJson);
+
+    FirebaseApp.Create(new AppOptions()
+    {
+        Credential = credential,
+    });
+}
 // Connect MomoAPI
 builder.Services.Configure<MomoOptionModel>(builder.Configuration.GetSection("MomoAPI"));
 builder.Services.AddScoped<IMomoService, MomoService>();
@@ -44,6 +66,8 @@ builder.Services.AddScoped<PRM_BE.Data.Repository.PaymentRepository>();
 builder.Services.AddScoped< DeliveryService>();
 
 builder.Services.AddScoped<PRM_BE.Data.Repository.DeliveryRepository>();
+
+builder.Services.AddScoped<FirebaseStorageService>();
 
 // DbContext
 builder.Services.AddDbContext<AppDbContext>(options =>
