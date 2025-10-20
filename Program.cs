@@ -6,8 +6,14 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using PRM_BE.Data;
 using PRM_BE.Service;
+using PRM_BE.Model.Momo;
+using PRM_BE.Service.Momo;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Connect MomoAPI
+builder.Services.Configure<MomoOptionModel>(builder.Configuration.GetSection("MomoAPI"));
+builder.Services.AddScoped<IMomoService, MomoService>();
 
 // DI
 builder.Services.AddScoped<PRM_BE.Service.UserService>();

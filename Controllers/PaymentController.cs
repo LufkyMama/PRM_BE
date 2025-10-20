@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using PRM_BE.Service;
 using PRM_BE.Service.Models;
+using PRM_BE.Service.Momo;
 
 namespace PRM_BE.Controllers
 {
@@ -10,7 +11,27 @@ namespace PRM_BE.Controllers
     public class PaymentController : ControllerBase
     {
         private readonly PaymentService _paymentService;
+        private readonly IMomoService _momoService;
 
+        public PaymentController(IMomoService momoService)
+        {
+            _momoService = momoService;
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CreatePaymentUrl(OrderInfoModel model)
+        {
+            var response = await _momoService.CreatePaymentMomo(model);
+            return Redirect(response.PayUrl);
+        }
+        
+        [HttpGet]
+        public IActionResult PaymentCallBack() {
+            var response = _momoService.PaymentExecuteAsync(HttpContext.Request.Query);
+            return Ok(response); // Instead of View
+        }
+
+/*
         public PaymentController(PaymentService paymentService)
         {
             _paymentService = paymentService;
@@ -43,5 +64,6 @@ namespace PRM_BE.Controllers
             await _paymentService.UpdateStatusAsync(paymentId, dto);
             return Ok(new { message = "Payment status updated" });
         }
+*/        
     }
 }
