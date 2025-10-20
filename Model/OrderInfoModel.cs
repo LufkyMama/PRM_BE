@@ -1,4 +1,4 @@
-using PRM_BE.Model
+namespace PRM_BE.Model
 {
     public class OrderInfoModel
     {

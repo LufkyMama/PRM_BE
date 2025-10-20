@@ -2,6 +2,7 @@ using Microsoft.Extensions.Options;
 using System.Text;
 using System.Security.Cryptography;
 using PRM_BE.Model.Momo;
+using PRM_BE.Model;
 using RestSharp;
 using System.Text.Json.Serialization;
 using Newtonsoft.Json;
@@ -20,7 +21,7 @@ namespace PRM_BE.Service.Momo
             model.OrderId = DateTime.UtcNow.Ticks.ToString();
             model.OrderInfo = "Khách hàng: " + model.FullName + "Nội dung: " + model.OrderInfo;
             var rawData =
-                $"PartnerCode={_options.Value.PartnerCode}" +
+                $"partnerCode={_options.Value.PartnerCode}" +
                 $"&accessKey={_options.Value.AccessKey}" +
                 $"&requestId={model.OrderId}" +
                 $"&amount={model.Amount}" +
@@ -56,14 +57,18 @@ namespace PRM_BE.Service.Momo
 
         public MomoExecuteResponseModel PaymentExecuteAsync(IQueryCollection collection)
         {
-            var amount = collection.First(s => s.Key == "amount").Value;
-            var orderInfo = collection.First(s => s.Key == "OrderInfo").Value;
-            var orderId = collection.First(s => s.Key == "OrderId").Value;
+            // Build a case-insensitive lookup to avoid exceptions due to key casing
+            var lookup = collection.ToDictionary(k => k.Key, v => v.Value.ToString(), StringComparer.OrdinalIgnoreCase);
+
+            lookup.TryGetValue("amount", out var amount);
+            lookup.TryGetValue("orderInfo", out var orderInfo);
+            lookup.TryGetValue("orderId", out var orderId);
+
             return new MomoExecuteResponseModel()
             {
-                Amount = amount,
-                OrderId = orderId,
-                OrderInfo = orderInfo
+                Amount = amount ?? string.Empty,
+                OrderId = orderId ?? string.Empty,
+                OrderInfo = orderInfo ?? string.Empty
             };            
         }
 

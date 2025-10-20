@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using PRM_BE.Service;
 using PRM_BE.Service.Models;
 using PRM_BE.Service.Momo;
+using PRM_BE.Model;
 
 namespace PRM_BE.Controllers
 {

@@ -42,7 +42,7 @@ builder.Services.AddScoped<PRM_BE.Data.Repository.DeliveryRepository>();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddControllers();
+builder.Services.AddControllersWithViews();
 
 // ===== JWT AUTH =====
 var jwtSection = builder.Configuration.GetSection("Jwt");
@@ -121,6 +121,10 @@ app.UseHttpsRedirection();
 // THỨ TỰ ĐÚNG: Authentication trước Authorization
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.MapControllers();
 
