@@ -1,4 +1,7 @@
-﻿namespace PRM_BE.Service
+﻿using PRM_BE.Model;          
+using PRM_BE.Model.Enums;     
+
+namespace PRM_BE.Service
 {
     public class FlowerService
     {
@@ -26,6 +29,10 @@
         public void DeleteFlower(int id)
         {
             _flowerRepo.DeleteFlower(id);
+        }
+        public List<Model.Flower> GetByCategory(FlowerCategory category)
+        {
+            return _flowerRepo.GetByCategory(category);
         }
     }
 }

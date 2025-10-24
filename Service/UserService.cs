@@ -23,7 +23,7 @@ namespace PRM_BE.Service
             _configuration = configuration;
         }
 
-        public async Task<ServiceResponse<Auth>> RegisterAsync(string username, string email, string password, string? phoneNumber, string firstname, string lastname, string address)
+        public async Task<ServiceResponse<Auth>> RegisterAsync(string username, string email, string password, string? phoneNumber, string firstname, string lastname, string address = null)
         {
             // Validate inputs
             if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
