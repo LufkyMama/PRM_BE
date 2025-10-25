@@ -19,7 +19,7 @@ namespace PRM_BE.Controllers
         }
 
                 [HttpPost("image")]
-        public async Task<IActionResult> UploadImage([FromForm] IFormFile file)
+        public async Task<IActionResult> UploadImage(IFormFile file)
         {
             try
             {
@@ -50,7 +50,7 @@ namespace PRM_BE.Controllers
         }
 
         [HttpPut("image/{fileName}")]
-        public async Task<IActionResult> UpdateImage(string fileName, [FromForm] IFormFile file)
+        public async Task<IActionResult> UpdateImage(string fileName, IFormFile file)
         {
             try
             {

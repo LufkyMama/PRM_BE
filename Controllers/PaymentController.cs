@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using PRM_BE.Service;
 using PRM_BE.Service.Models;
 using PRM_BE.Service.Momo;
@@ -11,7 +12,6 @@ namespace PRM_BE.Controllers
     [Route("api/[controller]")]
     public class PaymentController : ControllerBase
     {
-        private readonly PaymentService _paymentService;
         private readonly IMomoService _momoService;
 
         public PaymentController(IMomoService momoService)
@@ -19,6 +19,7 @@ namespace PRM_BE.Controllers
             _momoService = momoService;
         }
 
+        [Authorize]
         [HttpPost]
         public async Task<IActionResult> CreatePaymentUrl(OrderInfoModel model)
         {
@@ -27,8 +28,8 @@ namespace PRM_BE.Controllers
         }
         
         [HttpGet]
-        public IActionResult PaymentCallBack() {
-            var response = _momoService.PaymentExecuteAsync(HttpContext.Request.Query);
+        public async Task<IActionResult> PaymentCallBack() {
+            var response = await _momoService.PaymentExecuteAsync(HttpContext.Request.Query);
             return Ok(response); // Instead of View
         }
 
