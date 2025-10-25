@@ -23,7 +23,7 @@ namespace PRM_BE.Controllers
         public async Task<IActionResult> CreatePaymentUrl(OrderInfoModel model)
         {
             var response = await _momoService.CreatePaymentMomo(model);
-            return Redirect(response.PayUrl);
+            return Ok(response);
         }
         
         [HttpGet]

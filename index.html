@@ -1,0 +1,57 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Momo Payment Test</title>
+</head>
+<body>
+    <h1>Momo Payment Test</h1>
+    <form id="payment-form">
+        <label for="fullName">Full Name:</label><br>
+        <input type="text" id="fullName" name="fullName" value="John Doe"><br>
+        <label for="orderId">Order ID:</label><br>
+        <input type="text" id="orderId" name="orderId" value="12345"><br>
+        <label for="orderInfo">Order Info:</label><br>
+        <input type="text" id="orderInfo" name="orderInfo" value="Flower Purchase"><br>
+        <label for="amount">Amount:</label><br>
+        <input type="number" id="amount" name="amount" value="10000"><br><br>
+        <button type="submit">Pay with Momo</button>
+    </form>
+
+    <div id="result"></div>
+
+    <script>
+        document.getElementById('payment-form').addEventListener('submit', async function (event) {
+            event.preventDefault();
+
+            const formData = new FormData(event.target);
+            const data = Object.fromEntries(formData.entries());
+
+            try {
+                const response = await fetch('/api/payment', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.payUrl) {
+                        window.location.href = result.payUrl;
+                    } else {
+                        document.getElementById('result').innerText = 'Error: ' + JSON.stringify(result);
+                    }
+                } else {
+                    document.getElementById('result').innerText = 'Error: ' + response.statusText;
+                }
+            } catch (error) {
+                document.getElementById('result').innerText = 'Error: ' + error.message;
+            }
+        });
+    </script>
+</body>
+</html>
