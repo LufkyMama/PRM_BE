@@ -15,31 +15,14 @@ using Google.Apis.Auth.OAuth2;
 var builder = WebApplication.CreateBuilder(args);
 
 // Firebase Admin SDK initialization
-var firebaseConfig = builder.Configuration.GetSection("Firebase").Get<FirebaseConfig>();
-if (firebaseConfig != null)
+var firebaseServiceAccount = "flower-shop-af959-firebase-adminsdk-fbsvc-1bf2f94faf.json";
+var firebaseCredentialPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, firebaseServiceAccount);
+Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", firebaseCredentialPath);
+
+FirebaseApp.Create(new AppOptions()
 {
-    // Tạo JSON string từ configuration
-    var serviceAccountJson = $@"{{
-        ""type"": ""service_account"",
-        ""project_id"": ""{firebaseConfig.ProjectId}"",
-        ""private_key_id"": ""{firebaseConfig.PrivateKeyId}"",
-        ""private_key"": ""{firebaseConfig.PrivateKey}"",
-        ""client_email"": ""{firebaseConfig.ClientEmail}"",
-        ""client_id"": ""{firebaseConfig.ClientId}"",
-        ""auth_uri"": ""{firebaseConfig.AuthUri}"",
-        ""token_uri"": ""{firebaseConfig.TokenUri}"",
-        ""auth_provider_x509_cert_url"": ""{firebaseConfig.AuthProviderX509CertUrl}"",
-        ""client_x509_cert_url"": ""{firebaseConfig.ClientX509CertUrl}"",
-        ""universe_domain"": ""{firebaseConfig.UniverseDomain}""
-    }}";
-
-    var credential = GoogleCredential.FromJson(serviceAccountJson);
-
-    FirebaseApp.Create(new AppOptions()
-    {
-        Credential = credential,
-    });
-}
+    Credential = GoogleCredential.GetApplicationDefault(),
+});
 // Connect MomoAPI
 builder.Services.Configure<MomoOptionModel>(builder.Configuration.GetSection("MomoAPI"));
 builder.Services.AddScoped<IMomoService, MomoService>();

@@ -1,10 +1,12 @@
 using PRM_BE.Service;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using System.Threading.Tasks;
 
 namespace PRM_BE.Controllers
 {
+    [Authorize(Policy = "admin")]
     [ApiController]
     [Route("api/[controller]")]
     public class UploadController : ControllerBase
@@ -16,7 +18,7 @@ namespace PRM_BE.Controllers
             _storageService = storageService;
         }
 
-        [HttpPost("image")]
+                [HttpPost("image")]
         public async Task<IActionResult> UploadImage([FromForm] IFormFile file)
         {
             try

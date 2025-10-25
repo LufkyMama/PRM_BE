@@ -1,0 +1,415 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flower Shop Management</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; background-color: #f4f4f4; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        h1, h2, h3 { color: #333; text-align: center; }
+        #app-container, #auth-container { max-width: 1000px; width: 100%; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        img.thumbnail { width: 60px; height: 60px; object-fit: cover; border-radius: 4px; }
+        form { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 30px; padding: 20px; border: 1px solid #ddd; border-radius: 5px; }
+        .form-actions { grid-column: 1 / -1; display: flex; justify-content: flex-end; gap: 10px; align-items: center;}
+        .form-full-width { grid-column: 1 / -1; }
+        button { padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; font-size: 1em; }
+        .btn-primary { background-color: #007bff; color: white; }
+        .btn-save { background-color: #28a745; color: white; }
+        .btn-update { background-color: #007bff; color: white; }
+        .btn-clear { background-color: #6c757d; color: white; }
+        .btn-edit { background-color: #ffc107; color: black; }
+        .btn-delete { background-color: #dc3545; color: white; }
+        .btn-logout { background-color: #dc3545; color: white; position: absolute; top: 20px; right: 20px; }
+        .error, .success { padding: 10px; border-radius: 4px; margin-bottom: 15px; text-align: center; }
+        .error { color: #721c24; background-color: #f8d7da; border: 1px solid #f5c6cb; }
+        .success { color: #155724; background-color: #d4edda; border: 1px solid #c3e6cb; }
+        .hidden { display: none; }
+        .auth-toggle { text-align: center; margin-top: 20px; }
+        .auth-toggle a { color: #007bff; cursor: pointer; text-decoration: underline; }
+        input, select, textarea { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        #image-preview-container { display: flex; align-items: center; gap: 10px;}
+    </style>
+</head>
+<body>
+
+    <div id="auth-container">
+        <div id="auth-messages"></div>
+        <!-- Registration Form -->
+        <div id="register-section">
+            <h2>Register New Account</h2>
+            <form id="register-form" style="grid-template-columns: 1fr 1fr;">
+                <div><label>Username:</label><input type="text" id="reg-username" required></div>
+                <div><label>Email:</label><input type="email" id="reg-email" required></div>
+                <div><label>First Name:</label><input type="text" id="reg-firstname" required></div>
+                <div><label>Last Name:</label><input type="text" id="reg-lastname" required></div>
+                <div><label>Password (min 6 chars):</label><input type="password" id="reg-password" required></div>
+                <div><label>Phone Number:</label><input type="tel" id="reg-phone"></div>
+                <div class="form-full-width"><label>Address:</label><input type="text" id="reg-address"></div>
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">Register</button>
+                </div>
+            </form>
+            <div class="auth-toggle">Already have an account? <a id="show-login">Login here</a>.</div>
+        </div>
+
+        <!-- Login Form -->
+        <div id="login-section" class="hidden">
+            <h2>Login</h2>
+            <form id="login-form" style="grid-template-columns: 1fr;">
+                <div><label>Email:</label><input type="email" id="login-email" required></div>
+                <div><label>Password:</label><input type="password" id="login-password" required></div>
+                <div class="form-actions" style="justify-content: center;">
+                    <button type="submit" class="btn-primary">Login</button>
+                </div>
+            </form>
+            <div class="auth-toggle">Don't have an account? <a id="show-register">Register here</a>.</div>
+        </div>
+    </div>
+
+    <div id="app-container" class="hidden">
+        <button id="btn-logout" class="btn-logout">Logout</button>
+        <h1>Flower Shop Management</h1>
+        <div id="app-messages"></div>
+        <!-- Flower Form -->
+        <form id="flower-form">
+             <input type="hidden" id="flower-id">
+            <div><label>Name:</label><input type="text" id="flower-name" required></div>
+            <div><label>Price:</label><input type="number" id="flower-price" step="0.01" required></div>
+            <div class="form-full-width"><label>Description:</label><textarea id="flower-description" rows="3"></textarea></div>
+            <div><label>Stock:</label><input type="number" id="flower-stock" required></div>
+            <div><label>Category:</label><select id="flower-category" required>
+                <option value="0">Birthday</option><option value="1">Wedding</option><option value="2">Grand Opening</option><option value="3">Anniversary</option><option value="4">Funeral</option><option value="5">Holiday</option>
+            </select></div>
+            <div id="image-preview-container">
+                <label>Image:</label>
+                <input type="file" id="flower-image-file" accept="image/*">
+                <input type="hidden" id="flower-image-url">
+                <img id="image-preview" src="" class="thumbnail hidden" alt="Image Preview">
+                <button type="button" id="btn-delete-image" class="btn-delete hidden">Xóa ảnh</button>
+            </div>
+            <div class="form-actions">
+                <button type="button" id="btn-save" class="btn-save">Save New</button>
+                <button type="button" id="btn-update" class="btn-update hidden">Update</button>
+                <button type="button" id="btn-clear" class="btn-clear">Clear</button>
+            </div>
+        </form>
+        
+        <h2>Flower List</h2>
+        <table id="flower-table">
+            <thead><tr><th>Image</th><th>Name</th><th>Price</th><th>Stock</th><th>Category</th><th>Actions</th></tr></thead>
+            <tbody id="flower-list"></tbody>
+        </table>
+    </div>
+
+    <script>
+        const apiUrl = 'http://localhost:5098/api';
+        const categoryMap = { 0: 'Birthday', 1: 'Wedding', 2: 'Grand Opening', 3: 'Anniversary', 4: 'Funeral', 5: 'Holiday' };
+
+        // --- DOM Elements ---
+        const authContainer = document.getElementById('auth-container');
+        const appContainer = document.getElementById('app-container');
+        const loginSection = document.getElementById('login-section');
+        const registerSection = document.getElementById('register-section');
+        const authMessages = document.getElementById('auth-messages');
+        const appMessages = document.getElementById('app-messages');
+        const btnDeleteImage = document.getElementById('btn-delete-image');
+
+        // --- Event Listeners ---
+        document.getElementById('show-login').addEventListener('click', () => toggleAuthForms(true));
+        document.getElementById('show-register').addEventListener('click', () => toggleAuthForms(false));
+        document.getElementById('register-form').addEventListener('submit', handleRegister);
+        document.getElementById('login-form').addEventListener('submit', handleLogin);
+        document.getElementById('btn-logout').addEventListener('click', handleLogout);
+        document.getElementById('flower-form').addEventListener('submit', e => e.preventDefault());
+        document.getElementById('btn-save').addEventListener('click', handleSaveFlower);
+        document.getElementById('btn-update').addEventListener('click', handleUpdateFlower);
+        document.getElementById('btn-clear').addEventListener('click', clearFlowerForm);
+        btnDeleteImage.addEventListener('click', handleDeleteImage);
+
+        // --- Auth Functions ---
+        function toggleAuthForms(showLogin) {
+            loginSection.classList.toggle('hidden', !showLogin);
+            registerSection.classList.toggle('hidden', showLogin);
+        }
+
+        async function handleRegister(e) {
+            e.preventDefault();
+            const payload = {
+                username: document.getElementById('reg-username').value,
+                email: document.getElementById('reg-email').value,
+                password: document.getElementById('reg-password').value,
+                firstName: document.getElementById('reg-firstname').value,
+                lastName: document.getElementById('reg-lastname').value,
+                phoneNumber: document.getElementById('reg-phone').value,
+                address: document.getElementById('reg-address').value,
+            };
+            const result = await apiCall('/User/register', 'POST', payload, getAuthHeader(), 'Registration successful! Please log in.', 'auth');
+            if(result) toggleAuthForms(true);
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const payload = {
+                email: document.getElementById('login-email').value,
+                password: document.getElementById('login-password').value,
+            };
+            const result = await apiCall('/User/login', 'POST', payload, getAuthHeader(), 'Login successful!', 'auth');
+            if (result && result.data && result.data.data && result.data.data.token) {
+                localStorage.setItem('jwtToken', result.data.data.token);
+                showApp(true);
+                getFlowers();
+            }
+        }
+
+        function handleLogout() {
+            localStorage.removeItem('jwtToken');
+            showApp(false);
+        }
+
+        function checkInitialAuth() {
+            const token = localStorage.getItem('jwtToken');
+            if (token) {
+                showApp(true);
+                getFlowers();
+            } else {
+                showApp(false);
+            }
+        }
+
+        function showApp(isLoggedIn) {
+            authContainer.classList.toggle('hidden', isLoggedIn);
+            appContainer.classList.toggle('hidden', !isLoggedIn);
+        }
+
+        // --- Flower CRUD Functions ---
+        async function getFlowers() {
+            const result = await apiCall('/Flower', 'GET', null, getAuthHeader(), null, 'app');
+            if (!result) return;
+
+            const flowerList = document.getElementById('flower-list');
+            flowerList.innerHTML = '';
+            result.data.forEach(flower => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><img src="${flower.imageUrl}" alt="${flower.name}" class="thumbnail" onerror="this.style.display='none'"></td>
+                    <td>${flower.name}</td>
+                    <td>${flower.price.toFixed(2)}</td>
+                    <td>${flower.stock}</td>
+                    <td>${categoryMap[flower.category] || 'Unknown'}</td>
+                    <td>
+                        <button class="btn-edit" onclick="editFlower(${flower.id})">Edit</button>
+                        <button class="btn-delete" onclick="deleteFlower(${flower.id})">Delete</button>
+                    </td>
+                `;
+                flowerList.appendChild(row);
+            });
+        }
+
+        async function handleSaveFlower() {
+            const fileInput = document.getElementById('flower-image-file');
+            let imageUrl = document.getElementById('flower-image-url').value;
+
+            if (fileInput.files[0]) {
+                imageUrl = await uploadImage(fileInput.files[0]);
+                if (!imageUrl) return;
+            }
+            if (!imageUrl) {
+                showMessage('Image is required for a new flower.', 'error', 'app');
+                return;
+            }
+
+            const payload = getFlowerFormData();
+            payload.imageUrl = imageUrl;
+
+            const result = await apiCall('/Flower', 'POST', payload, getAuthHeader(), 'Flower saved successfully!', 'app');
+            if (result) {
+                clearFlowerForm();
+                getFlowers();
+            }
+        }
+
+        async function handleUpdateFlower() {
+            const id = parseInt(document.getElementById('flower-id').value);
+            const fileInput = document.getElementById('flower-image-file');
+            let imageUrl = document.getElementById('flower-image-url').value;
+
+            if (fileInput.files[0]) {
+                imageUrl = await uploadImage(fileInput.files[0]);
+                if (!imageUrl) return;
+            }
+
+            const payload = getFlowerFormData();
+            payload.id = id;
+            payload.imageUrl = imageUrl;
+
+            const result = await apiCall(`/Flower/${id}`, 'PUT', payload, getAuthHeader(), 'Flower updated successfully!', 'app');
+            if (result) {
+                clearFlowerForm();
+                getFlowers();
+            }
+        }
+
+        async function deleteFlower(id) {
+            if (!confirm('Are you sure you want to delete this ENTIRE flower (database record and image)?')) return;
+            const result = await apiCall(`/Flower/${id}`, 'DELETE', null, getAuthHeader(), 'Flower deleted.', 'app');
+            if (result) getFlowers();
+        }
+
+        async function handleDeleteImage() {
+            const id = parseInt(document.getElementById('flower-id').value);
+            if (!id) return;
+            if (!confirm('Are you sure you want to delete the image for this flower?')) return;
+
+            const result = await apiCall(`/Flower/${id}/image`, 'DELETE', null, getAuthHeader(), 'Image deleted.', 'app');
+            if (result) {
+                // Clear image fields in the form and refresh the main list
+                document.getElementById('flower-image-url').value = '';
+                document.getElementById('image-preview').src = '';
+                document.getElementById('image-preview').classList.add('hidden');
+                btnDeleteImage.classList.add('hidden');
+                getFlowers();
+            }
+        }
+
+        async function editFlower(id) {
+            const result = await apiCall(`/Flower/${id}`, 'GET', null, getAuthHeader(), null, 'app');
+            if (!result) return;
+            const flower = result.data;
+            document.getElementById('flower-id').value = flower.id;
+            document.getElementById('flower-name').value = flower.name;
+            document.getElementById('flower-description').value = flower.description;
+            document.getElementById('flower-price').value = flower.price;
+            document.getElementById('flower-stock').value = flower.stock;
+            document.getElementById('flower-category').value = flower.category;
+            document.getElementById('flower-image-url').value = flower.imageUrl;
+
+            const imagePreview = document.getElementById('image-preview');
+            if (flower.imageUrl) {
+                imagePreview.src = flower.imageUrl;
+                imagePreview.classList.remove('hidden');
+                btnDeleteImage.classList.remove('hidden');
+            } else {
+                imagePreview.classList.add('hidden');
+                btnDeleteImage.classList.add('hidden');
+            }
+            
+            document.getElementById('btn-save').classList.add('hidden');
+            document.getElementById('btn-update').classList.remove('hidden');
+            window.scrollTo(0, 0);
+        }
+
+        // --- Helper Functions ---
+        function getFlowerFormData() {
+            return {
+                name: document.getElementById('flower-name').value,
+                description: document.getElementById('flower-description').value,
+                price: parseFloat(document.getElementById('flower-price').value),
+                stock: parseInt(document.getElementById('flower-stock').value),
+                category: parseInt(document.getElementById('flower-category').value),
+            };
+        }
+
+        function clearFlowerForm() {
+            document.getElementById('flower-form').reset();
+            document.getElementById('flower-id').value = '';
+            document.getElementById('flower-image-url').value = '';
+            document.getElementById('image-preview').src = '';
+            document.getElementById('image-preview').classList.add('hidden');
+            btnDeleteImage.classList.add('hidden');
+            document.getElementById('btn-save').classList.remove('hidden');
+            document.getElementById('btn-update').classList.add('hidden');
+        }
+
+        async function uploadImage(file) {
+            const formData = new FormData();
+            formData.append('file', file);
+            const headers = getAuthHeader(true); // Gets the auth header but no content-type
+
+            try {
+                const response = await fetch(apiUrl + '/Upload/image', {
+                    method: 'POST',
+                    headers: headers,
+                    body: formData
+                });
+
+                const responseData = await response.json().catch(() => ({}));
+
+                if (!response.ok) {
+                    // Use the same detailed error reporting as apiCall
+                    const errorMsg = responseData.message || responseData.Message || responseData.error || (responseData.errors ? JSON.stringify(responseData.errors) : 'Image upload failed.');
+                    throw new Error(errorMsg);
+                }
+                showMessage('Image uploaded!', 'success', 'app');
+                return responseData.imageUrl;
+
+            } catch (error) {
+                showMessage('Upload failed: ' + error.message, 'error', 'app');
+                return null;
+            }
+        }
+
+        function getAuthHeader(isFormData = false) {
+            const token = localStorage.getItem('jwtToken');
+            const headers = {};
+            if (!isFormData) {
+                headers['Content-Type'] = 'application/json';
+            }
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+            return headers;
+        }
+
+        async function apiCall(endpoint, method, body, headers, successMsg, msgLocation) {
+            const options = { method, headers: headers || {} };
+            if (body) {
+                // Only stringify if the body is a plain object
+                if (Object.prototype.toString.call(body) === '[object Object]') {
+                    options.body = JSON.stringify(body);
+                }
+                else {
+                    options.body = body; // Handles FormData, etc.
+                }
+            }
+
+            try {
+                const response = await fetch(apiUrl + endpoint, options);
+
+                // For 204 No Content, the response is successful but has no body
+                if (response.status === 204) {
+                    if (successMsg) showMessage(successMsg, 'success', msgLocation);
+                    return { success: true, data: null };
+                }
+
+                const responseData = await response.json().catch(() => null); // Gracefully handle empty body
+
+                if (response.ok) { // .ok covers status codes in the range 200-299
+                    if (successMsg) showMessage(successMsg, 'success', msgLocation);
+                    return { success: true, data: responseData };
+                } else {
+                    // Handle non-ok responses that have a JSON body with error details
+                    const errorMsg = responseData?.message || responseData?.Message || responseData?.title || (responseData?.errors ? JSON.stringify(responseData.errors) : 'An unknown error occurred.');
+                    throw new Error(errorMsg);
+                }
+            } catch (error) {
+                showMessage(error.message, 'error', msgLocation);
+                return null; // Explicitly return null on failure
+            }
+        }
+
+        function showMessage(message, type, location) {
+            const container = location === 'app' ? appMessages : authMessages;
+            container.innerHTML = `<div class="${type}">${message}</div>`;
+            setTimeout(() => { container.innerHTML = ''; }, 5000);
+        }
+
+        // --- Initial Load ---
+        document.addEventListener('DOMContentLoaded', checkInitialAuth);
+
+    </script>
+</body>
+</html>
