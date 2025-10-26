@@ -30,11 +30,12 @@ namespace PRM_BE.Service.Momo
 
             var orderInfo = "Thanh toan don hang #" + internalOrderId;
 
+            var amount = (long)model.Amount;
             var rawData =
                 $"partnerCode={_options.Value.PartnerCode}" +
                 $"&accessKey={_options.Value.AccessKey}" +
                 $"&requestId={momoTransactionId}" +
-                $"&amount={model.Amount}" +
+                $"&amount={amount}" +
                 $"&orderId={momoTransactionId}" +
                 $"&orderInfo={orderInfo}" +
                 $"&returnUrl={_options.Value.ReturnUrl}" +
@@ -54,7 +55,7 @@ namespace PRM_BE.Service.Momo
                 notifyUrl = _options.Value.NotifyUrl,
                 returnUrl = _options.Value.ReturnUrl,
                 orderId = momoTransactionId,
-                amount = model.Amount.ToString(),
+                amount = amount.ToString(),
                 orderInfo = orderInfo,
                 requestId = momoTransactionId,
                 extraData = internalOrderId,
