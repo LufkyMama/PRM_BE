@@ -11,6 +11,8 @@ using PRM_BE.Service.Momo;
 using PRM_BE.Model;
 using FirebaseAdmin;
 using Google.Apis.Auth.OAuth2;
+using Microsoft.Extensions.FileProviders;
+using Microsoft.AspNetCore.StaticFiles;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -145,6 +147,15 @@ app.UseHttpsRedirection();
 
 // Enable CORS
 app.UseCors("AllowAll");
+
+// Serve static files
+app.UseStaticFiles(); // Serves files from wwwroot by default
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(
+        Path.Combine(builder.Environment.ContentRootPath, "Frontend")),
+    RequestPath = "/Frontend"
+});
 
 // THỨ TỰ ĐÚNG: Authentication trước Authorization
 app.UseAuthentication();

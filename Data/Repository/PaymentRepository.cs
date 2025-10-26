@@ -53,6 +53,15 @@ namespace PRM_BE.Data.Repository
             await _db.SaveChangesAsync();
         }
 
+        public Task<List<Payment>> GetByUserIdAsync(int userId)
+        {
+            return _db.Payments
+                .Include(p => p.Order)
+                .Where(p => p.Order.CustomerUserId == userId)
+                .OrderByDescending(p => p.CreatedAt)
+                .ToListAsync();
+        }
+
         public Task SaveChangesAsync() => _db.SaveChangesAsync();
     }
 }

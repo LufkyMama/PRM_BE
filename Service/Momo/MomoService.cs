@@ -9,6 +9,7 @@ using PRM_BE.Data;
 using Microsoft.EntityFrameworkCore;
 using PRM_BE.Model.Enums;
 using PRM_BE.Data.Repository;
+using PRM_BE.Service.Models; // Add this using directive
 
 namespace PRM_BE.Service.Momo
 {
@@ -16,11 +17,13 @@ namespace PRM_BE.Service.Momo
     {
         private readonly IOptions<MomoOptionModel> _options;
         private readonly AppDbContext _context;
+        private readonly PaymentService _paymentService; // Injected PaymentService
 
-        public MomoService(IOptions<MomoOptionModel> options, AppDbContext context, PaymentRepository paymentRepo)
+        public MomoService(IOptions<MomoOptionModel> options, AppDbContext context, PaymentService paymentService) // Updated constructor
         {
             _options = options;
             _context = context;
+            _paymentService = paymentService;
         }
 
         public async Task<MomoCreatePaymentResponseModel> CreatePaymentMomo(OrderInfoModel model)
@@ -87,50 +90,61 @@ namespace PRM_BE.Service.Momo
             response.Amount = lookup.TryGetValue("amount", out var amount) ? amount : string.Empty;
             response.OrderInfo = lookup.TryGetValue("orderInfo", out var orderInfo) ? orderInfo : string.Empty;
 
-            // If payment is successful, update database
-            if (lookup["errorCode"] == "0")
-            {
-                response.Message = "Payment successful!";
+                        // If payment is successful, update database
 
-                // Get OrderId from extraData
-                if (int.TryParse(lookup["extraData"], out int orderIdFromExtraData))
-                {
-                    var order = await _context.Orders
-                                            .Include(o => o.Items)// Include Payment to update it
-                                            .FirstOrDefaultAsync(o => o.Id == orderIdFromExtraData);
+                        if (int.TryParse(lookup["extraData"], out int orderIdFromExtraData))
 
-                    if (order != null && order.Status == OrderStatus.Pending)
-                    {
-                        order.Status = OrderStatus.Confirmed; // Update order status
-
-
-                        // Decrement stock
-                        foreach (var item in order.Items)
                         {
-                            var flower = await _context.Flowers.FindAsync(item.FlowerId);
-                            if (flower != null)
+
+                            var payment = await _context.Payments.FirstOrDefaultAsync(p => p.OrderId == orderIdFromExtraData);
+
+                            if (payment != null)
+
                             {
-                                if (flower.Stock >= item.Quantity)
+
+                                if (lookup["errorCode"] == "0")
+
                                 {
-                                    flower.Stock -= item.Quantity;
+
+                                    response.Message = "Payment successful!";
+
+                                    var updateDto = new PaymentStatusUpdateDto { Status = PaymentStatus.Paid };
+
+                                    await _paymentService.UpdateStatusAsync(payment.Id, updateDto);
+
                                 }
+
                                 else
+
                                 {
-                                    // Handle insufficient stock scenario, maybe cancel the order
-                                    order.Status = OrderStatus.Cancelled;
-                                    response.Message = $"Order cancelled due to insufficient stock for flower ID {flower.Id}.";
-                                    break; // Exit the loop
+
+                                    response.Message = lookup["message"];
+
+                                    var updateDto = new PaymentStatusUpdateDto { Status = PaymentStatus.Failed, FailureReason = lookup["message"] };
+
+                                    await _paymentService.UpdateStatusAsync(payment.Id, updateDto);
+
                                 }
+
                             }
+
+                            else
+
+                            {
+
+                                response.Message = "Could not find associated payment record.";
+
+                            }
+
                         }
-                        await _context.SaveChangesAsync();
-                    }
-                }
-            }
-            else
-            {
-                response.Message = lookup["message"];
-            }
+
+                        else
+
+                        {
+
+                            response.Message = "Invalid extraData.";
+
+                        }
             return response;
         }
 

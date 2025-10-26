@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Confirmation</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; background-color: #f4f4f4; display: flex; justify-content: center; align-items: center; min-height: 100vh; text-align: center; }
+        .container { background: white; padding: 40px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        h1 { color: #333; }
+        p { color: #555; font-size: 1.1em; }
+        .success { color: #155724; }
+        .error { color: #721c24; }
+        a { color: #007bff; text-decoration: none; font-size: 1.2em; margin-top: 20px; display: inline-block; }
+        a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 id="payment-status">Processing...</h1>
+        <p id="payment-message"></p>
+        <a href="/Frontend/index.html">Back to Shop</a>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const statusEl = document.getElementById('payment-status');
+            const messageEl = document.getElementById('payment-message');
+
+            const errorCode = urlParams.get('errorCode');
+            const orderId = urlParams.get('extraData');
+            const message = urlParams.get('message');
+            const amount = urlParams.get('amount');
+
+            if (errorCode === '0') {
+                statusEl.textContent = 'Payment Successful!';
+                statusEl.className = 'success';
+                messageEl.textContent = `Thank you for your order #${orderId}. Total amount paid: ${new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount)}.`;
+            } else {
+                statusEl.textContent = 'Payment Failed';
+                statusEl.className = 'error';
+                messageEl.textContent = `There was an issue with your payment for order #${orderId}. Reason: ${message || 'Unknown error'}. Please try again.`;
+            }
+            
+            // It's good practice to clear the URL to avoid reprocessing
+            if (window.history.replaceState) {
+                history.replaceState({}, document.title, window.location.pathname);
+            }
+        });
+    </script>
+</body>
+</html>

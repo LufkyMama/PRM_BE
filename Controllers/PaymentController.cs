@@ -13,10 +13,12 @@ namespace PRM_BE.Controllers
     public class PaymentController : ControllerBase
     {
         private readonly IMomoService _momoService;
+        private readonly PaymentService _paymentService;
 
-        public PaymentController(IMomoService momoService)
+        public PaymentController(IMomoService momoService, PaymentService paymentService)
         {
             _momoService = momoService;
+            _paymentService = paymentService;
         }
 
         [Authorize]
@@ -28,13 +30,26 @@ namespace PRM_BE.Controllers
         }
         
         [HttpGet]
-        public async Task<IActionResult> PaymentCallBack() {
-            var response = await _momoService.PaymentExecuteAsync(HttpContext.Request.Query);
-            return Ok(response); // Instead of View
-        }
-
-/*
-        public PaymentController(PaymentService paymentService)
+                public async Task<IActionResult> PaymentCallBack() { 
+                    var response = await _momoService.PaymentExecuteAsync(HttpContext.Request.Query);
+                    return Ok(response); // Instead of View
+                }
+        
+                [Authorize]
+                [HttpGet("history")]
+                public async Task<IActionResult> GetPaymentHistory()
+                {
+                    var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.NameIdentifier);
+                    if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
+                    {
+                        return Unauthorized("User ID not found in token.");
+                    }
+        
+                    var history = await _paymentService.GetHistoryByUserAsync(userId);
+                    return Ok(history);
+                }
+        
+        /*        public PaymentController(PaymentService paymentService)
         {
             _paymentService = paymentService;
         }

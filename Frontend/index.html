@@ -115,8 +115,11 @@
             <div id="cart-items"></div>
             <div id="cart-total"></div>
             <button id="btn-create-order" class="btn-primary hidden">Create Order</button>
+            <button id="btn-history" class="btn-primary">View Payment History</button> <!-- Added button -->
             <div id="order-confirmation" class="hidden" style="margin-top: 20px;"></div>
         </div>
+
+        <div id="history-section" style="margin-top: 40px;"></div> <!-- Added history container -->
 
     </div>
 
@@ -125,7 +128,9 @@
     <script>
         const apiUrl = 'http://localhost:5098/api';
         const categoryMap = { 1: 'Roses', 2: 'Tulips', 3: 'Daisies', 4: 'Lilies', 5: 'Orchids', 6: 'Sunflowers', 7: 'Carnations', 8: 'MixedBouquets' };
-        
+        const paymentStatusMap = { 0: 'Unpaid', 1: 'Authorized', 2: 'Paid', 3: 'Failed', 4: 'Refunded', 5: 'PartiallyRefunded' };
+        const paymentMethodMap = { 0: 'Unknown', 1: 'CashOnDelivery', 2: 'Momo' }; // Assuming 2 for Momo
+
         let cart = [];
         let currentUser = null;
 
@@ -138,6 +143,8 @@
             const cartTotalDiv = document.getElementById('cart-total');
             const btnCreateOrder = document.getElementById('btn-create-order');
             const orderConfirmationDiv = document.getElementById('order-confirmation');
+            const btnHistory = document.getElementById('btn-history');
+            const historySection = document.getElementById('history-section');
 
             // --- Event Listeners ---
             document.getElementById('show-login').addEventListener('click', () => toggleAuthForms(true));
@@ -151,6 +158,7 @@
             document.getElementById('btn-clear').addEventListener('click', clearFlowerForm);
             btnDeleteImage.addEventListener('click', handleDeleteImage);
             btnCreateOrder.addEventListener('click', handleCreateOrder);
+            btnHistory.addEventListener('click', handleGetHistory);
             
             checkInitialAuth();
             handleMomoCallback(); // Call this on page load to check for Momo params
@@ -346,6 +354,32 @@
                 const result = await apiCall('/payment', 'POST', paymentPayload, getAuthHeader(), 'Redirecting to Momo...', 'app');
                 if (result && result.data.payUrl) {
                     window.location.href = result.data.payUrl;
+                }
+            }
+
+            async function handleGetHistory() {
+                const result = await apiCall('/payment/history', 'GET', null, getAuthHeader(), 'Fetched payment history.', 'app');
+                if (result && result.data) {
+                    const payments = result.data;
+                    let historyHtml = '<h2>Payment History</h2>';
+                    if (payments.length === 0) {
+                        historyHtml += '<p>No payment history found.</p>';
+                    } else {
+                        historyHtml += '<table id="history-table"><thead><tr><th>Order ID</th><th>Amount</th><th>Status</th><th>Method</th><th>Date</th></tr></thead><tbody>';
+                        payments.forEach(p => {
+                            historyHtml += `
+                                <tr>
+                                    <td>${p.orderId}</td>
+                                    <td>${p.amount.toFixed(2)}</td>
+                                    <td>${paymentStatusMap[p.status] || 'Unknown'}</td>
+                                    <td>${paymentMethodMap[p.method] || 'Unknown'}</td>
+                                    <td>${new Date(p.createdAt).toLocaleString()}</td>
+                                </tr>
+                            `;
+                        });
+                        historyHtml += '</tbody></table>';
+                    }
+                    historySection.innerHTML = historyHtml;
                 }
             }
 
