@@ -56,7 +56,7 @@ builder.Services.AddScoped<FirebaseStorageService>();
 
 // DbContext
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("Supabase")));
 
 builder.Services.AddControllersWithViews();
 
