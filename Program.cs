@@ -58,7 +58,7 @@ builder.Services.AddScoped<FirebaseStorageService>();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("Supabase")));
 
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllers();
 
 // Add CORS
 builder.Services.AddCors(options =>
@@ -160,10 +160,6 @@ app.UseStaticFiles(new StaticFileOptions
 // THỨ TỰ ĐÚNG: Authentication trước Authorization
 app.UseAuthentication();
 app.UseAuthorization();
-
-app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.MapControllers();
 
