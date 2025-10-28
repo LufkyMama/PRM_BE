@@ -53,8 +53,32 @@ namespace PRM_BE.Service
                 {
                     if (dto.Status == PaymentStatus.Paid)
                     {
-                        o.Status = Model.Enums.OrderStatus.Confirmed;
-                        o.ConfirmedAt = DateTime.UtcNow;
+                        // Check stock and decrement before confirming order
+                        bool stockIsSufficient = true;
+                        foreach (var item in o.Items)
+                        {
+                            if (item.Flower.Stock < item.Quantity)
+                            {
+                                stockIsSufficient = false;
+                                o.Status = OrderStatus.Cancelled; // Or another status indicating stock issue
+                                // Optionally, update payment status back to Failed
+                                p.Status = PaymentStatus.Failed;
+                                p.FailureReason = $"Insufficient stock for flower ID {item.FlowerId}.";
+                                await _paymentRepo.UpdateAsync(p);
+                                break; // Exit loop
+                            }
+                        }
+
+                        if (stockIsSufficient)
+                        {
+                            foreach (var item in o.Items)
+                            {
+                                item.Flower.Stock -= item.Quantity;
+                            }
+                            o.Status = OrderStatus.Confirmed;
+                            o.ConfirmedAt = DateTime.UtcNow;
+                        }
+                        
                         await _orderRepo.UpdateAsync(o);
                     }
                     else if (dto.Status == PaymentStatus.Refunded)
@@ -81,5 +105,11 @@ namespace PRM_BE.Service
             RefundedAt = p.RefundedAt,
             FailureReason = p.FailureReason
         };
+
+        public async Task<List<PaymentDto>> GetHistoryByUserAsync(int userId)
+        {
+            var payments = await _paymentRepo.GetByUserIdAsync(userId);
+            return payments.Select(Map).ToList();
+        }
     }
 }
