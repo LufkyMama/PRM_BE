@@ -17,7 +17,7 @@ using Microsoft.AspNetCore.StaticFiles;
 var builder = WebApplication.CreateBuilder(args);
 
 // Firebase Admin SDK initialization
-var firebaseServiceAccount = "flower-shop-af959-firebase-adminsdk-fbsvc-1bf2f94faf.json";
+var firebaseServiceAccount = "flower-shop-af959-firebase-adminsdk-fbsvc-6308580216.json";
 var firebaseCredentialPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, firebaseServiceAccount);
 Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", firebaseCredentialPath);
 
