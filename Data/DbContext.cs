@@ -32,7 +32,6 @@ namespace PRM_BE.Data
                 e.Property(x => x.FirstName).IsRequired().HasMaxLength(100);
                 e.Property(x => x.LastName).IsRequired().HasMaxLength(100);
                 e.Property(x => x.PhoneNumber).IsRequired().HasMaxLength(20);
-                e.Property(x => x.Address).HasMaxLength(255);
 
                 e.Property(x => x.CreatedAt)
                  .HasDefaultValueSql("CURRENT_TIMESTAMP AT TIME ZONE 'UTC'");

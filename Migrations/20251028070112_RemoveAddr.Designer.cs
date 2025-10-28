@@ -12,8 +12,8 @@ using PRM_BE.Data;
 namespace PRM_BE.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20251008152628_newsth")]
-    partial class newsth
+    [Migration("20251028070112_RemoveAddr")]
+    partial class RemoveAddr
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -256,8 +256,7 @@ namespace PRM_BE.Migrations
 
                     b.Property<string>("Address")
                         .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)");
+                        .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()

@@ -12,8 +12,8 @@ using PRM_BE.Data;
 namespace PRM_BE.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20251024201054_MakeAddressNullable")]
-    partial class MakeAddressNullable
+    [Migration("20251028064019_addr2")]
+    partial class addr2
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
