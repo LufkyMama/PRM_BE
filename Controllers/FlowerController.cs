@@ -3,8 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using System.Threading.Tasks;
 
-using PRM_BE.Model;           
-using PRM_BE.Model.Enums;     
+using PRM_BE.Model;
+using PRM_BE.Model.Enums;
 using PRM_BE.Service;
 namespace PRM_BE.Controllers
 {
@@ -17,7 +17,7 @@ namespace PRM_BE.Controllers
         {
             _flowerService = flowerService;
         }
-        [HttpGet ("all")]
+        [HttpGet("all")]
         public ActionResult<List<Model.Flower>> GetAllFlowers()
         {
             return _flowerService.GetAllFlowers();
@@ -83,6 +83,9 @@ namespace PRM_BE.Controllers
             }
             await _flowerService.DeleteFlowerImageAsync(id);
             return Ok(new { message = "Image deleted and flower updated successfully." });
+
+        }
+
         [HttpGet]
         public ActionResult<List<Flower>> Get([FromQuery] FlowerCategory? category)
         {
