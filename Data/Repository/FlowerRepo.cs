@@ -1,4 +1,7 @@
-﻿namespace PRM_BE.Data.Repository
+﻿using PRM_BE.Data;             
+using PRM_BE.Model;           
+using PRM_BE.Model.Enums;
+namespace PRM_BE.Data.Repository
 {
     public class FlowerRepo
     {
@@ -10,6 +13,13 @@
         public List<Model.Flower> GetAllFlowers()
         {
             return _context.Flowers.ToList();
+        }
+        public List<Flower> GetByCategory(FlowerCategory category)
+        {
+            return _context.Flowers
+                .Where(f => f.Category == category)
+                .OrderBy(f => f.Name)
+                .ToList();
         }
         public Model.Flower GetFlowerById(int id)
         {
@@ -44,5 +54,6 @@
                 _context.SaveChanges();
             }
         }
+
     }
 }

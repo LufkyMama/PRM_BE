@@ -1,4 +1,6 @@
 using System.Text.RegularExpressions;
+﻿using PRM_BE.Model;          
+using PRM_BE.Model.Enums;     
 
 namespace PRM_BE.Service
 {
@@ -77,6 +79,10 @@ namespace PRM_BE.Service
                 return fileName;
             }
             return null;
+        }
+        public List<Model.Flower> GetByCategory(FlowerCategory category)
+        {
+            return _flowerRepo.GetByCategory(category);
         }
     }
 }
