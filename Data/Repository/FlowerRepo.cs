@@ -32,8 +32,18 @@ namespace PRM_BE.Data.Repository
         }
         public void UpdateFlower(Model.Flower flower)
         {
-            _context.Flowers.Update(flower);
-            _context.SaveChanges();
+            var existingFlower = _context.Flowers.Find(flower.Id);
+            if (existingFlower != null)
+            {
+                existingFlower.Name = flower.Name;
+                existingFlower.Description = flower.Description;
+                existingFlower.Price = flower.Price;
+                existingFlower.Stock = flower.Stock;
+                existingFlower.Category = flower.Category;
+                existingFlower.ImageUrl = flower.ImageUrl;
+
+                _context.SaveChanges();
+            }
         }
         public void DeleteFlower(int id)
         {

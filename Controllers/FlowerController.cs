@@ -1,5 +1,8 @@
-﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using System.Threading.Tasks;
+
 using PRM_BE.Model;           
 using PRM_BE.Model.Enums;     
 using PRM_BE.Service;
@@ -19,6 +22,7 @@ namespace PRM_BE.Controllers
         {
             return _flowerService.GetAllFlowers();
         }
+
         [HttpGet("{id}")]
         public ActionResult<Model.Flower> GetFlowerById(int id)
         {
@@ -29,13 +33,17 @@ namespace PRM_BE.Controllers
             }
             return flower;
         }
+
         [HttpPost]
+        [Authorize(Policy = "admin")]
         public ActionResult AddFlower(Model.Flower flower)
         {
             _flowerService.AddFlower(flower);
             return CreatedAtAction(nameof(GetFlowerById), new { id = flower.Id }, flower);
         }
+
         [HttpPut("{id}")]
+        [Authorize(Policy = "admin")]
         public ActionResult UpdateFlower(int id, Model.Flower flower)
         {
             if (id != flower.Id)
@@ -50,17 +58,31 @@ namespace PRM_BE.Controllers
             _flowerService.UpdateFlower(flower);
             return NoContent();
         }
+
         [HttpDelete("{id}")]
-        public ActionResult DeleteFlower(int id)
+        [Authorize(Policy = "admin")]
+        public async Task<IActionResult> DeleteFlower(int id)
         {
             var existingFlower = _flowerService.GetFlowerById(id);
             if (existingFlower == null)
             {
                 return NotFound();
             }
-            _flowerService.DeleteFlower(id);
+            await _flowerService.DeleteFlowerAsync(id);
             return NoContent();
         }
+
+        [HttpDelete("{id}/image")]
+        [Authorize(Policy = "admin")]
+        public async Task<IActionResult> DeleteFlowerImage(int id)
+        {
+            var existingFlower = _flowerService.GetFlowerById(id);
+            if (existingFlower == null)
+            {
+                return NotFound();
+            }
+            await _flowerService.DeleteFlowerImageAsync(id);
+            return Ok(new { message = "Image deleted and flower updated successfully." });
         [HttpGet]
         public ActionResult<List<Flower>> Get([FromQuery] FlowerCategory? category)
         {

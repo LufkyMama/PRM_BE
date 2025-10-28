@@ -6,8 +6,28 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using PRM_BE.Data;
 using PRM_BE.Service;
+using PRM_BE.Model.Momo;
+using PRM_BE.Service.Momo;
+using PRM_BE.Model;
+using FirebaseAdmin;
+using Google.Apis.Auth.OAuth2;
+using Microsoft.Extensions.FileProviders;
+using Microsoft.AspNetCore.StaticFiles;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Firebase Admin SDK initialization
+var firebaseServiceAccount = "flower-shop-af959-firebase-adminsdk-fbsvc-1bf2f94faf.json";
+var firebaseCredentialPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, firebaseServiceAccount);
+Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", firebaseCredentialPath);
+
+FirebaseApp.Create(new AppOptions()
+{
+    Credential = GoogleCredential.GetApplicationDefault(),
+});
+// Connect MomoAPI
+builder.Services.Configure<MomoOptionModel>(builder.Configuration.GetSection("MomoAPI"));
+builder.Services.AddScoped<IMomoService, MomoService>();
 
 // DI
 builder.Services.AddScoped<PRM_BE.Service.UserService>();
@@ -32,11 +52,24 @@ builder.Services.AddScoped< DeliveryService>();
 
 builder.Services.AddScoped<PRM_BE.Data.Repository.DeliveryRepository>();
 
+builder.Services.AddScoped<FirebaseStorageService>();
+
 // DbContext
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("Supabase")));
 
 builder.Services.AddControllers();
+
+// Add CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+});
 
 // ===== JWT AUTH =====
 var jwtSection = builder.Configuration.GetSection("Jwt");
@@ -111,6 +144,18 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+// Enable CORS
+app.UseCors("AllowAll");
+
+// Serve static files
+app.UseStaticFiles(); // Serves files from wwwroot by default
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(
+        Path.Combine(builder.Environment.ContentRootPath, "Frontend")),
+    RequestPath = "/Frontend"
+});
 
 // THỨ TỰ ĐÚNG: Authentication trước Authorization
 app.UseAuthentication();
